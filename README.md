@@ -6,7 +6,7 @@ A simple web-based Budget Tracker built with Flask, JavaScript, and Chart.js to 
 
 # ✨ Features
 
-✅ Add Income & Expenses – Log transactions with descriptions and categories
+- ✅ Add Income & Expenses – Log transactions with descriptions and categories
 ✅ Financial Summary – View total income, expenses, and balance at a glance
 ✅ Expense Breakdown – Interactive pie chart to analyze spending patterns
 ✅ Persistent Data Storage – Uses a JSON file to store transactions
