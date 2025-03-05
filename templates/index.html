@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Budget Tracker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-light: #f4f7f6;
+            --text-color: #333;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            flex: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: scale(1.02);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 12px 12px 35px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+        }
+
+        #summary {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #category-breakdown {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    max-width: 400px; /* Adjust width as needed */
+    margin: 0 auto;
+}
+
+#expenses-chart {
+    width: 100%;
+    max-width: 300px; /* Adjust as needed */
+    height: 300px; /* Set a fixed height */
+}
+        @media (max-width: 768px) {
+            .input-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>💰 Budget Tracker</h1>
+        </header>
+
+        <div class="input-section">
+            <div class="section">
+                <h2><i class="fas fa-plus-circle"></i> Add Income</h2>
+                <div class="input-group">
+                    <i class="fas fa-dollar-sign"></i>
+                    <input type="number" id="income-amount" placeholder="Amount" min="0" step="0.01" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-file-alt"></i>
+                    <input type="text" id="income-description" placeholder="Description" required>
+                </div>
+                <button class="btn" onclick="addIncome()">
+                    <i class="fas fa-save"></i> Add Income
+                </button>
+            </div>
+            
+            <div class="section">
+                <h2><i class="fas fa-minus-circle"></i> Add Expense</h2>
+                <div class="input-group">
+                    <i class="fas fa-dollar-sign"></i>
+                    <input type="number" id="expense-amount" placeholder="Amount" min="0" step="0.01" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-tags"></i>
+                    <select id="expense-category" required>
+                        <option value="">Select Category</option>
+                        <option value="Food">🍽️ Food</option>
+                        <option value="Transport">🚗 Transport</option>
+                        <option value="Entertainment">🎉 Entertainment</option>
+                        <option value="Utilities">⚡ Utilities</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-file-alt"></i>
+                    <input type="text" id="expense-description" placeholder="Description" required>
+                </div>
+                <button class="btn" onclick="addExpense()">
+                    <i class="fas fa-save"></i> Add Expense
+                </button>
+            </div>
+        </div>
+
+        <div id="summary">
+            <div>
+                <h3>Total Income</h3>
+                <p id="total-income">$0</p>
+            </div>
+            <div>
+                <h3>Total Expenses</h3>
+                <p id="total-expenses">$0</p>
+            </div>
+            <div>
+                <h3>Balance</h3>
+                <p id="balance">$0</p>
+            </div>
+        </div>
+
+        <div id="category-breakdown">
+            <h2>📊 Expenses by Category</h2>
+            <canvas id="expenses-chart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let expensesChart = null;
+
+        // Fetch and update financial summary
+        async function updateSummary() {
+            try {
+                const response = await fetch('/summary');
+                const data = await response.json();
+
+                // Update summary values
+                document.getElementById('total-income').textContent = `$${data.total_income.toFixed(2)}`;
+                document.getElementById('total-expenses').textContent = `$${data.total_expenses.toFixed(2)}`;
+                document.getElementById('balance').textContent = `$${data.balance.toFixed(2)}`;
+
+                // Update category chart
+                updateCategoryChart(data.expenses_by_category);
+            } catch (error) {
+                console.error('Error fetching summary:', error);
+                alert('Failed to retrieve financial summary');
+            }
+        }
+
+        // Create or update expenses chart
+        function updateCategoryChart(categoryData) {
+    const ctx = document.getElementById('expenses-chart').getContext('2d');
+    
+    // Destroy existing chart if it exists
+    if (expensesChart) {
+        expensesChart.destroy();
+    }
+
+    // Prepare chart data
+    const labels = Object.keys(categoryData);
+    const amounts = Object.values(categoryData);
+
+    expensesChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: amounts,
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', 
+                    '#4BC0C0', '#9966FF', '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, // Keeps the aspect ratio controlled
+            title: {
+                display: true,
+                text: 'Expenses by Category'
+            }
+        }
+    });
+}
+
+
+        // Add income via API
+        async function addIncome() {
+            const amount = document.getElementById('income-amount');
+            const description = document.getElementById('income-description');
+            
+            if (amount.value && description.value) {
+                try {
+                    const response = await fetch('/add_income', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            amount: parseFloat(amount.value),
+                            description: description.value
+                        })
+                    });
+
+                    if (response.ok) {
+                        amount.value = '';
+                        description.value = '';
+                        await updateSummary();
+                    } else {
+                        throw new Error('Failed to add income');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to add income');
+                }
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Add expense via API
+        async function addExpense() {
+            const amount = document.getElementById('expense-amount');
+            const category = document.getElementById('expense-category');
+            const description = document.getElementById('expense-description');
+            
+            if (amount.value && category.value && description.value) {
+                try {
+                    const response = await fetch('/add_expense', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            amount: parseFloat(amount.value),
+                            category: category.value,
+                            description: description.value
+                        })
+                    });
+
+                    if (response.ok) {
+                        amount.value = '';
+                        category.value = '';
+                        description.value = '';
+                        await updateSummary();
+                    } else {
+                        throw new Error('Failed to add expense');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to add expense');
+                }
+            } else {
+                alert('Please fill in all fields');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSummary();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+    "income": [],
+    "expenses": [
+        {
+            "amount": 200.0,
+            "category": "Food",
+            "description": "zepto",
+            "date": "2025-03-05"
+        }
+    ],
+    "categories": [
+        "Food",
+        "Transport",
+        "Entertainment",
+        "Utilities",
+        "Other"
+    ]
+}
