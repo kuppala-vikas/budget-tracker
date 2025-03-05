@@ -30,11 +30,24 @@ Install dependencies
 bash
 Copy
 Edit
-pip install flask
-Run the Flask app
+-pip install flask
+-Run the Flask app
+
+# Ensure you're in the project directory
+- cd path/to/budget-tracker
+
+# Activate virtual environment
+# Windows
+- venv\Scripts\activate
+
+# macOS/Linux
+- source venv/bin/activate
+
+
 bash
 Copy
 Edit
 python app.py
+
 Open in Browser
 Visit http://127.0.0.1:5000/
